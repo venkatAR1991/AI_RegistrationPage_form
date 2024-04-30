@@ -1,0 +1,370 @@
+'''
+Created on 29-Apr-2024
+
+@author: Barrla
+'''
+import csv
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+
+def extract_values_from_csv(csv_file_path):
+    # Initialize empty lists to store values for different tags
+    text_values = []
+    button_values = []
+    textarea_values = []
+    radio_values = []
+    number_values = []
+    checkbox_values = []
+    date_values = []
+    file_values = []
+    email_values = []
+    
+    try:
+        # Open the CSV file in text mode and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            # Create a CSV reader object
+            csv_reader = csv.reader(csvfile)
+
+            # Skip the header row if it exists
+            next(csv_reader, None)
+
+            # Read each row in the CSV file
+            for row in csv_reader:
+                # Extract values from the 'tag' and 'id' columns
+                tag_value = row[1].strip().lower()  # Assuming 'tag' column is at index 2
+                id_value = row[2]   # Assuming 'id' column is at index 3
+
+                # Check the tag value and append the ID value to the corresponding list
+                if tag_value == 'input':
+                    input_type = row[4].strip().lower()  # Assuming 'type' attribute is at index 5
+                    if input_type == 'radio':
+                        radio_values.append(id_value)
+                    elif input_type == 'number':
+                        number_values.append(id_value)
+                    elif input_type == 'checkbox':
+                        checkbox_values.append(id_value)
+                    elif input_type == 'date':
+                        date_values.append(id_value)
+                    elif input_type == 'file':
+                        file_values.append(id_value)
+                    elif input_type == 'email':
+                        email_values.append(id_value)    
+                    else:
+                        text_values.append(id_value)
+                elif tag_value == 'button':
+                    button_values.append(id_value)
+                elif tag_value == 'textarea':
+                    textarea_values.append(id_value)
+
+    except Exception as e:
+        print("An error occurred while extracting values from CSV:", e)
+
+    return text_values, button_values, textarea_values, radio_values, number_values, checkbox_values, date_values, file_values, email_values
+
+# Example usage:
+text_values, button_values, textarea_values, radio_values, number_values, checkbox_values, date_values, file_values, email_values = extract_values_from_csv('KNW2.csv')
+print("Text Values:", text_values)
+print("Button Values:", button_values)
+print("Textarea Values:", textarea_values)
+print("Radio Values:", radio_values)
+print("Number Values:", number_values)
+print("Checkbox Values:", checkbox_values)
+print("Date Values:", date_values)
+print("File Values:", file_values)
+print("email values", email_values)
+
+
+
+def perform_button_clicks(driver, button_values):
+    
+
+    try:
+        # Open the webpage
+        #driver.get('https://barrlasystems.com/contactus.html')
+
+        # Iterate through each button ID value extracted from the CSV
+        for button_id in button_values:
+            # Wait for the element to be clickable
+            wait = WebDriverWait(driver, 30)
+
+            # Find the button element by its ID and click it
+            button_element = wait.until(EC.element_to_be_clickable((By.ID, button_id)))
+            button_element.click()
+        if button_element:
+                print("Button click action event has run successfully.")
+        else:
+                print("Button click action event did not run successfully.")
+ 
+    except Exception as e:
+        print("An error occurred while launching WebDriver and clicking the button:", e)
+        
+        
+        
+        # Verify if the button click action event has run successfully
+        # For example, you can check if a new element appears on the page after the button click
+def send_values_to_textarea_elements(driver,  csv_file_path):
+    
+    try:
+        # Open the CSV file and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header row
+
+            # Read the rows and extract values
+            for row in csv_reader:
+                # Extract values from columns
+                value_column_3 = row[2]
+                value_column_5 = row[5]
+
+                # Check if the tag is 'input' (assuming it's in lowercase)
+                if row[1].strip().lower() == 'textarea':
+                    # Wait for the element to be clickable
+                    wait = WebDriverWait(driver, 30)
+
+                    # Find the input element by its ID and send the value from column 5 to it
+                    element_column_3 = wait.until(EC.element_to_be_clickable((By.ID, value_column_3)))
+                    element_column_3.send_keys(value_column_5)
+                # Wait for a short time (optional)
+                time.sleep(3)    
+            # # Verification step: Check if the entered text matches the expected value
+            # entered_text = textarea_element.get_attribute("value")
+            #
+            # if entered_text == value_column_5:
+            #             print(f"Textarea value '{value_column_5}' has been successfully entered for ID '{textarea_id}'.")
+            # else:
+            #             print(f"Failed to enter textarea value '{value_column_5}' for ID '{textarea_id}'.")
+
+    except Exception as e:
+        print("An error occurred while sending values to textarea elements:", e)
+
+
+def send_text_values(driver, csv_file_path):
+    try:
+        # Open the CSV file and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header row
+
+            # Read the rows and extract values
+            for row in csv_reader:
+                # Extract values from columns
+                value_column_3 = row[2]
+                value_column_5 = row[5]
+                
+                # Check if the tag is 'input' and type is 'text'
+                if row[1].strip().lower() == 'input' and row[4].strip().lower() == 'text':
+                    
+                    # Wait for the element to be clickable
+                    wait = WebDriverWait(driver, 10)
+                    
+                    # Find the input element by its ID and send the value from column 5 to it
+                    element_column_3 = wait.until(EC.element_to_be_clickable((By.ID, value_column_3)))
+                    
+                    # Send the value from column 5 to the input element
+                    element_column_3.clear()  # Clear existing text (if any)
+                    element_column_3.send_keys(value_column_5)
+                    
+                    # Verify if the entered text is correct
+                    entered_text = element_column_3.get_attribute("value")
+                    if entered_text != value_column_5:
+                        print(f"Entered text '{value_column_5}' does not match the value '{entered_text}' in the input field.")
+           
+
+                # Wait for a short time (optional)
+                time.sleep(2)    
+
+    except Exception as e:
+        print("An error occurred while sending values to input elements:", e)
+
+    return main
+
+# Read the value from the CSV file
+def read_value_from_csv(driver, csv_file_path):
+    try:
+        # Open the CSV file and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header row
+
+            # Wait for the element to be clickable
+            wait = WebDriverWait(driver, 10)
+
+            # Read the rows and extract values
+            for row in csv_reader:
+                # Extract values from columns
+                value_column_3 = row[2]
+
+                # Check if the tag is 'radio' (assuming it's in lowercase)
+                if row[4].strip().lower() == 'radio':
+                    if row[5].strip().upper() == 'TRUE':
+                        # Find the input element by its ID and click on it
+                        radio_element = wait.until(EC.element_to_be_clickable((By.ID, value_column_3)))
+                        radio_element.click()
+
+    except Exception as e:
+        print("An error occurred while sending values to input elements:", e)
+        
+        
+# Read the value from the CSV file
+def checkbox_from_csv(driver, csv_file_path):
+    try:
+        # Open the CSV file and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header row
+
+            # Wait for the element to be clickable
+            wait = WebDriverWait(driver, 10)
+
+            # Read the rows and extract values
+            for row in csv_reader:
+                # Extract values from columns
+                value_column_3 = row[2]
+
+                # Check if the tag is 'checkbox' (assuming it's in lowercase)
+                if row[4].strip().lower() == 'checkbox':
+                    if row[5].strip().upper() == 'TRUE':
+                        # Find the checkbox element by its ID and click on it
+                        checkbox_element = wait.until(EC.element_to_be_clickable((By.ID, value_column_3)))
+                        checkbox_element.click()
+
+    except Exception as e:
+        print("An error occurred while handling checkboxes:", e)
+        
+        
+def send_values_to_email_elements(driver, csv_file_path):
+    try:
+        # Open the CSV file and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header row
+
+            # Read the rows and extract values
+            for row in csv_reader:
+                # Extract values from columns
+                value_column_3 = row[2]
+                value_column_5 = row[5]
+                
+                # Check if the tag is 'input' and type is 'email'
+                if row[1].strip().lower() == 'input' and row[4].strip().lower() == 'email':
+                    
+                    # Wait for the element to be clickable
+                    wait = WebDriverWait(driver, 10)
+                    
+                    # Find the input element by its ID and send the value from column 5 to it
+                    element_column_3 = wait.until(EC.element_to_be_clickable((By.ID, value_column_3)))
+                    
+                    # Send the value from column 5 to the input element
+                    element_column_3.clear()  # Clear existing text (if any)
+                    element_column_3.send_keys(value_column_5)
+                    
+                    # Verify if the entered text is correct
+                    entered_text = element_column_3.get_attribute("value")
+                    if entered_text != value_column_5:
+                        print(f"Entered text '{value_column_5}' does not match the value '{entered_text}' in the input field.")
+                    
+                    # Wait for a short time (optional)
+                    time.sleep(2)
+
+    except Exception as e:
+        print("An error occurred while sending values to input elements:", e)
+        
+        
+
+# Function to send values to input elements
+def send_values_to_number_elements(driver, csv_file_path):
+    try:
+        # Open the CSV file and read its contents
+        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header row
+
+            # Read the rows and extract values
+            for row in csv_reader:
+                # Extract values from columns
+                value_column_3 = row[2]
+                value_column_5 = row[5]
+                
+                # Check if the tag is 'input' and type is 'number'
+                if row[1].strip().lower() == 'input' and row[4].strip().lower() == 'number':
+                    
+                    # Wait for the element to be clickable
+                    wait = WebDriverWait(driver, 10)
+                    
+                    # Find the input element by its ID and send the value from column 5 to it
+                    element_column_3 = wait.until(EC.element_to_be_clickable((By.ID, value_column_3)))
+                    
+                    # Send the value from column 5 to the input element
+                    element_column_3.clear()  # Clear existing text (if any)
+                    element_column_3.send_keys(value_column_5)
+                    
+                    # Verify if the entered text is correct
+                    entered_text = element_column_3.get_attribute("value")
+                    if entered_text != value_column_5:
+                        print(f"Entered text '{value_column_5}' does not match the value '{entered_text}' in the input field.")
+                    
+                    # Wait for a short time (optional)
+                    time.sleep(2)
+
+    except Exception as e:
+        print("An error occurred while sending values to input elements:", e)
+
+        
+
+
+
+
+
+# Main function to orchestrate the process
+def main(csv_file_path):
+    # Initialize Selenium WebDriver (make sure you have the appropriate web driver installed)
+    driver = webdriver.Chrome()  # Example: Chrome WebDriver
+    driver.maximize_window()
+    # Open the webpage
+    driver.get('https://www.knowledgeware.in/Automation/practiceform.html')
+
+   
+    try:
+        
+        # Extract values from the CSV based on conditions
+        _, button_values, textarea_values, radio_values, number_values, checkbox_values, date_values, file_values, email_values  = extract_values_from_csv(csv_file_path)
+        
+        #perform text input
+        send_text_values(driver, csv_file_path)
+        
+        #send values to email
+        send_values_to_email_elements(driver, csv_file_path)
+        
+        #send values to number
+        send_values_to_number_elements(driver, csv_file_path)
+
+        # Send values to textarea elements
+        send_values_to_textarea_elements(driver, csv_file_path)
+        
+        #Perform radio button
+        read_value_from_csv(driver, csv_file_path)
+        
+        #perform checkbox button
+        checkbox_from_csv(driver, csv_file_path)
+        
+        # Perform button clicks
+        perform_button_clicks(driver, button_values)
+      
+        
+ 
+    except Exception as e:
+        print("An error occurred in the main function:", e)
+
+    finally:
+        # Wait for a short time (optional)
+        time.sleep(5)
+        # Close the browser window
+        driver.quit()
+
+
+# Call the main function with the CSV file path
+main('KNW2.csv')
+
